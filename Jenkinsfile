@@ -48,15 +48,22 @@ spec:
 
         stage('Build & Push Image') {
             steps {
+                // container('kaniko') {
+                //     sh """
+                //         /kaniko/executor \\
+                //         --dockerfile=Dockerfile \\
+                //         --context=dir://\$PWD \\
+                //         --destination=\${REGISTRY}/\${IMAGE_NAME}:\${BUILD_NUMBER} \\
+                //         --destination=\${REGISTRY}/\${IMAGE_NAME}:latest \\
+                //         --verbosity=info \\
+                //         --cleanup
+                //     """
+                // }
                 container('kaniko') {
                     sh """
-                        /kaniko/executor \\
-                        --dockerfile=Dockerfile \\
-                        --context=dir://\$PWD \\
-                        --destination=\${REGISTRY}/\${IMAGE_NAME}:\${BUILD_NUMBER} \\
-                        --destination=\${REGISTRY}/\${IMAGE_NAME}:latest \\
-                        --verbosity=info \\
-                        --cleanup
+                        echo "Checking Kaniko Docker config..."
+                        ls -l /kaniko/.docker
+                        cat /kaniko/.docker/config.json
                     """
                 }
             }

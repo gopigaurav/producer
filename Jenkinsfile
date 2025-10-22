@@ -45,17 +45,17 @@ pipeline {
         stage('Build and Push Image') {
             steps {
                 container('kaniko') {
-                    sh """
+                sh '''
                     /kaniko/executor \
-                    --context \$WORKSPACE \
-                    --dockerfile \$WORKSPACE/Dockerfile \
-                    --destination \$REGISTRY/\$IMAGE_NAME:\$BUILD_NUMBER \
-                    --destination \$REGISTRY/\$IMAGE_NAME:latest \
-                    --verbosity info
-                    """
+                    --context ${WORKSPACE} \
+                    --dockerfile ${WORKSPACE}/Dockerfile \
+                    --destination=docker.io/gopi_gaurav/producer:${BUILD_NUMBER} \
+                    --destination=docker.io/gopi_gaurav/producer:latest
+                '''
                 }
             }
         }
+
 
         stage('Update Infra GitOps Repo') {
             steps {

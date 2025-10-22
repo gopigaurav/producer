@@ -56,8 +56,7 @@ spec:
                         --destination=\${REGISTRY}/\${IMAGE_NAME}:\${BUILD_NUMBER} \\
                         --destination=\${REGISTRY}/\${IMAGE_NAME}:latest \\
                         --verbosity=info \\
-                        --cleanup \\
-                        --docker-config=/kaniko/.docker
+                        --cleanup
                     """
                 }
             }

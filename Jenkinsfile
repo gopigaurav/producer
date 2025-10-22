@@ -53,7 +53,7 @@ spec:
                                                     passwordVariable: 'DOCKER_PASSWORD')]) {
                         sh '''
                             mkdir -p /tmp/kaniko/.docker
-                            echo "{\"auths\":{\"https://index.docker.io/v1/\":{\"auth\":\"$(echo -n $DOCKER_USERNAME:$DOCKER_PASSWORD | base64)\"}}}" > /tmp/kaniko/.docker/config.json
+                            echo "{\"auths\": {\"https://index.docker.io/v1/\": {\"auth\": \"$(echo -n $DOCKER_USERNAME:$DOCKER_PASSWORD | base64)\"}}}" > /tmp/kaniko/.docker/config.json
                             echo "✅ Docker config created at /tmp/kaniko/.docker/config.json"
                             cat /tmp/kaniko/.docker/config.json
                             export DOCKER_CONFIG=/tmp/kaniko/.docker
@@ -69,9 +69,6 @@ spec:
                 }
             }
         }
-
-
-
 
         stage('Update Infra GitOps Repo') {
             steps {

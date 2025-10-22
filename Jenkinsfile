@@ -47,10 +47,10 @@ pipeline {
                 container('kaniko') {
                 sh '''
                     /kaniko/executor \
-                    --context ${WORKSPACE} \
-                    --dockerfile ${WORKSPACE}/Dockerfile \
-                    --destination=docker.io/gopi_gaurav/producer:${BUILD_NUMBER} \
-                    --destination=docker.io/gopi_gaurav/producer:latest
+                        --context ${WORKSPACE} \
+                        --dockerfile ${WORKSPACE}/Dockerfile \
+                        --destination=docker.io/gopi_gaurav/producer:${BUILD_NUMBER} \
+                        --destination=docker.io/gopi_gaurav/producer:latest
                 '''
                 }
             }

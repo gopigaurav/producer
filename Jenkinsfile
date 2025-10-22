@@ -10,9 +10,6 @@ metadata:
   labels:
     jenkins/label: kaniko-agent
 spec:
-  securityContext:
-    fsGroup: 1000
-    runAsUser: 1000
   containers:
     - name: kaniko
       image: gcr.io/kaniko-project/executor:latest
@@ -40,17 +37,18 @@ spec:
             }
         }
 
-        stage('Build and Push Image') {
+        stage('Build and Push') {
             steps {
                 container('kaniko') {
-                    sh '''
-                        /kaniko/executor \
-                        --dockerfile=Dockerfile \
-                        --context=$PWD \
-                        --destination=${REGISTRY}/${IMAGE_NAME}:${BUILD_NUMBER} \
-                        --destination=${REGISTRY}/${IMAGE_NAME}:latest \
+                    sh """
+                        /kaniko/executor \\
+                        --dockerfile=Dockerfile \\
+                        --context=dir://\$PWD \\
+                        --destination=\${REGISTRY}/\${IMAGE_NAME}:\${BUILD_NUMBER} \\
+                        --destination=\${REGISTRY}/\${IMAGE_NAME}:latest \\
+                        --verbosity=info \\
                         --cleanup
-                    '''
+                    """
                 }
             }
         }

@@ -61,6 +61,7 @@ spec:
                             cat /tmp/kaniko/.docker/config.json
 
                             export DOCKER_CONFIG=/tmp/kaniko/.docker
+                            cat /kaniko/.docker/config.json
 
                             /kaniko/executor \
                                 --dockerfile=Dockerfile \

@@ -1,7 +1,7 @@
 pipeline {
     agent {
         kubernetes {
-            label 'kaniko-agent'
+            inheritFrom 'default' // optional, can remove if static pod only
             defaultContainer 'kaniko'
             yaml """
 apiVersion: v1
@@ -25,10 +25,13 @@ spec:
     }
 
     environment {
-        REGISTRY = "yourdockerhubusername"   // Replace with your DockerHub registry
-        IMAGE_NAME = "yourimage"            // Replace with your image name
+        REGISTRY = "gopi_gaurav"
+        IMAGE_NAME = "producer"
+        INFRA_REPO = "git@github.com:gopigaurav/infra-gitops.git"
+        BRANCH = "main"
         BUILD_NUMBER = "${env.BUILD_NUMBER}"
     }
+
 
     stages {
         stage('Checkout Code') {
@@ -37,7 +40,7 @@ spec:
             }
         }
 
-        stage('Build and Push') {
+        stage('Build & Push Image') {
             steps {
                 container('kaniko') {
                     sh """
@@ -49,6 +52,29 @@ spec:
                         --verbosity=info \\
                         --cleanup
                     """
+                }
+            }
+        }
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Build and Push Image') {
+            steps {
+                container('kaniko') {
+                    sh '''
+                        /kaniko/executor \
+                        --dockerfile=Dockerfile \
+                        --context=$PWD \
+                        --destination=${REGISTRY}/${IMAGE_NAME}:${BUILD_NUMBER} \
+                        --destination=${REGISTRY}/${IMAGE_NAME}:latest \
+                        --cleanup
+                    '''
                 }
             }
         }

@@ -1,36 +1,37 @@
 pipeline {
     agent {
         kubernetes {
+            label 'kaniko-agent'
             defaultContainer 'kaniko'
             yaml """
-                apiVersion: v1
-                kind: Pod
-                metadata:
-                    labels:
-                        jenkins/label: kaniko-agent
-                spec:
-                containers:
-                  - name: kaniko-agent
-                    image: gcr.io/kaniko-project/executor:latest
-                    command:
-                      - cat
-                    tty: true
-                    volumeMounts:
-                      - name: kaniko-secret
-                        mountPath: /kaniko/.docker
-
-
-                volumes:
-                  - name: kaniko-secret
-                    secret:
-                        secretName: dockerhub-creds
-                """
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    jenkins/label: kaniko-agent
+spec:
+  serviceAccountName: jenkins
+  containers:
+    - name: kaniko
+      image: gcr.io/kaniko-project/executor:latest
+      command:
+        - cat
+      tty: true
+      volumeMounts:
+        - name: docker-config
+          mountPath: /kaniko/.docker/
+  volumes:
+    - name: docker-config
+      secret:
+        secretName: dockerhub-creds
+"""
         }
     }
 
     environment {
-        REGISTRY = "gopi_gaurav"
+        REGISTRY = "docker.io/gopigaurav"
         IMAGE_NAME = "producer"
+        TAG = "latest"
         INFRA_REPO = "git@github.com:gopigaurav/infra-gitops.git"
         BRANCH = "main"
     }
@@ -44,12 +45,17 @@ pipeline {
 
         stage('Build and Push Image') {
             steps {
-                container('kaniko-agent') {
-                    sh 'executor --dockerfile=Dockerfile --context=./ --destination=your-registry/your-image:tag'
+                container('kaniko') {
+                    sh '''
+                    /kaniko/executor \
+                      --context $PWD \
+                      --dockerfile Dockerfile \
+                      --destination=$REGISTRY/$IMAGE_NAME:$TAG \
+                      --cleanup
+                    '''
                 }
             }
         }
-
 
         stage('Update Infra GitOps Repo') {
             steps {

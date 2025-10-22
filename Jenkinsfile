@@ -10,28 +10,35 @@ metadata:
   labels:
     jenkins/label: kaniko-agent
 spec:
-  serviceAccountName: jenkins
   containers:
-    - name: kaniko
-      image: gcr.io/kaniko-project/executor:latest
-      command:
-        - cat
-      tty: true
-      volumeMounts:
-        - name: docker-config
-          mountPath: /kaniko/.docker/
+  - name: kaniko
+    image: gcr.io/kaniko-project/executor:latest
+    command:
+      - cat
+    tty: true
+    volumeMounts:
+      - name: kaniko-secret
+        mountPath: /kaniko/.docker
+  - name: jnlp
+    image: jenkins/inbound-agent:latest
+    args: ['\$(JENKINS_SECRET)', '\$(JENKINS_NAME)']
+    tty: true
+    volumeMounts:
+      - name: workspace-volume
+        mountPath: /home/jenkins/agent
   volumes:
-    - name: docker-config
+    - name: kaniko-secret
       secret:
         secretName: dockerhub-creds
+    - name: workspace-volume
+      emptyDir: {}
 """
         }
     }
 
     environment {
-        REGISTRY = "docker.io/gopigaurav"
+        REGISTRY = "gopi_gaurav"
         IMAGE_NAME = "producer"
-        TAG = "latest"
         INFRA_REPO = "git@github.com:gopigaurav/infra-gitops.git"
         BRANCH = "main"
     }
@@ -47,11 +54,12 @@ spec:
             steps {
                 container('kaniko') {
                     sh '''
-                    /kaniko/executor \
-                      --context $PWD \
-                      --dockerfile Dockerfile \
-                      --destination=$REGISTRY/$IMAGE_NAME:$TAG \
-                      --cleanup
+                        /kaniko/executor \
+                        --dockerfile=Dockerfile \
+                        --context=$PWD \
+                        --destination=${REGISTRY}/${IMAGE_NAME}:${BUILD_NUMBER} \
+                        --destination=${REGISTRY}/${IMAGE_NAME}:latest \
+                        --cleanup
                     '''
                 }
             }
@@ -59,17 +67,19 @@ spec:
 
         stage('Update Infra GitOps Repo') {
             steps {
-                script {
-                    sh """
-                        rm -rf infra-gitops
-                        git clone ${INFRA_REPO}
-                        cd infra-gitops/overlays/dev
-                        yq e -i '.image.tag = "${BUILD_NUMBER}"' ${IMAGE_NAME}-values.yaml
-                        git config user.email "ci@yourcompany.com"
-                        git config user.name "ci-bot"
-                        git commit -am "Update ${IMAGE_NAME} to build ${BUILD_NUMBER}"
-                        git push origin ${BRANCH}
-                    """
+                container('jnlp') {
+                    script {
+                        sh """
+                            rm -rf infra-gitops
+                            git clone ${INFRA_REPO}
+                            cd infra-gitops/overlays/dev
+                            yq e -i '.image.tag = "${BUILD_NUMBER}"' ${IMAGE_NAME}-values.yaml
+                            git config user.email "ci@yourcompany.com"
+                            git config user.name "ci-bot"
+                            git commit -am "Update ${IMAGE_NAME} to build ${BUILD_NUMBER}"
+                            git push origin ${BRANCH}
+                        """
+                    }
                 }
             }
         }

@@ -45,13 +45,13 @@ pipeline {
         stage('Build and Push Image') {
             steps {
                 container('kaniko') {
-                sh '''
+                    sh '''
                     /kaniko/executor \
-                        --context ${WORKSPACE} \
-                        --dockerfile ${WORKSPACE}/Dockerfile \
-                        --destination=docker.io/gopi_gaurav/producer:${BUILD_NUMBER} \
-                        --destination=docker.io/gopi_gaurav/producer:latest
-                '''
+                        --context $WORKSPACE \
+                        --dockerfile $WORKSPACE/Dockerfile \
+                        --destination=docker.io/<your-dockerhub-username>/producer:latest \
+                        --cleanup
+                    '''
                 }
             }
         }

@@ -47,23 +47,18 @@ spec:
         }
         stage('Build & Push Image') {
             steps {
-                // Inject Docker Hub credentials from Jenkins
-                withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', 
-                                                usernameVariable: 'DOCKER_USERNAME', 
+                withCredentials([usernamePassword(credentialsId: 'dockerhub-creds',
+                                                usernameVariable: 'DOCKER_USERNAME',
                                                 passwordVariable: 'DOCKER_PASSWORD')]) {
                     container('kaniko') {
                         sh """
-                            # Create Kaniko Docker config directory if it doesn't exist
-                            mkdir -p /kaniko/.docker
+                            mkdir -p /tmp/kaniko/.docker
 
-                            # Generate a config.json with base64 encoded Docker Hub credentials
-                            echo "{\"auths\":{\"https://index.docker.io/v1/\":{\"auth\":\"\$(echo -n \$DOCKER_USERNAME:\$DOCKER_PASSWORD | base64)\"}}}" > /kaniko/.docker/config.json
+                            echo "{\"auths\":{\"https://index.docker.io/v1/\":{\"auth\":\"\$(echo -n \$DOCKER_USERNAME:\$DOCKER_PASSWORD | base64)\"}}}" > /tmp/kaniko/.docker/config.json
 
-                            # Optional: Verify config.json content (for debug, remove in prod)
-                            echo "Kaniko Docker config:"
-                            cat /kaniko/.docker/config.json
+                            echo "Docker config created at /tmp/kaniko/.docker/config.json"
+                            ls -l /tmp/kaniko/.docker
 
-                            # Run Kaniko to build and push the image
                             /kaniko/executor \\
                                 --dockerfile=Dockerfile \\
                                 --context=dir://\$PWD \\
@@ -71,7 +66,6 @@ spec:
                                 --destination=\${REGISTRY}/\${IMAGE_NAME}:latest \\
                                 --verbosity=info \\
                                 --cleanup \\
-                                --docker-config=/kaniko/.docker
                         """
                     }
                 }

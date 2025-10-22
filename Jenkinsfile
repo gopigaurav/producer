@@ -1,10 +1,37 @@
 pipeline {
-    agent any
+    agent {
+        kubernetes {
+            label 'kaniko-agent'
+            defaultContainer 'kaniko'
+            yaml """
+                apiVersion: v1
+                kind: Pod
+                metadata:
+                labels:
+                    some-label: kaniko
+                spec:
+                containers:
+                - name: kaniko
+                    image: gcr.io/kaniko-project/executor:latest
+                    command:
+                    - cat
+                    tty: true
+                    volumeMounts:
+                    - name: kaniko-secret
+                    mountPath: /kaniko/.docker
+                restartPolicy: Never
+                volumes:
+                - name: kaniko-secret
+                    secret:
+                    secretName: dockerhub-creds
+                """
+        }
+    }
 
     environment {
-        REGISTRY = "gopi_gaurav"          // or your ECR/GCR repo
-        IMAGE_NAME = "producer"                  // change to consumer in consumer repo
-        INFRA_REPO = "git@github.com:your-org/gitops_infra_kubernetes.git"
+        REGISTRY = "gopi_gaurav"
+        IMAGE_NAME = "producer"
+        INFRA_REPO = "git@github.com:gopigaurav/infra-gitops.git"
         BRANCH = "main"
     }
 
@@ -15,21 +42,17 @@ pipeline {
             }
         }
 
-        stage('Build Docker Image') {
+        stage('Build and Push Image') {
             steps {
-                script {
-                    docker.build("${REGISTRY}/${IMAGE_NAME}:${env.BUILD_NUMBER}")
-                }
-            }
-        }
-
-        stage('Push Docker Image') {
-            steps {
-                script {
-                    docker.withRegistry('', 'dockerhub-creds') {
-                        docker.image("${REGISTRY}/${IMAGE_NAME}:${env.BUILD_NUMBER}").push()
-                        docker.image("${REGISTRY}/${IMAGE_NAME}:${env.BUILD_NUMBER}").push("latest")
-                    }
+                container('kaniko') {
+                    sh """
+                    /kaniko/executor \
+                    --context \$WORKSPACE \
+                    --dockerfile \$WORKSPACE/Dockerfile \
+                    --destination \$REGISTRY/\$IMAGE_NAME:\$BUILD_NUMBER \
+                    --destination \$REGISTRY/\$IMAGE_NAME:latest \
+                    --verbosity info
+                    """
                 }
             }
         }
@@ -41,10 +64,10 @@ pipeline {
                         rm -rf infra-gitops
                         git clone ${INFRA_REPO}
                         cd infra-gitops/overlays/dev
-                        yq e -i '.image.tag = "${env.BUILD_NUMBER}"' ${IMAGE_NAME}-values.yaml
+                        yq e -i '.image.tag = "${BUILD_NUMBER}"' ${IMAGE_NAME}-values.yaml
                         git config user.email "ci@yourcompany.com"
                         git config user.name "ci-bot"
-                        git commit -am "Update ${IMAGE_NAME} to build ${env.BUILD_NUMBER}"
+                        git commit -am "Update ${IMAGE_NAME} to build ${BUILD_NUMBER}"
                         git push origin ${BRANCH}
                     """
                 }

@@ -1,7 +1,5 @@
 pipeline {
     agent {
-    // You can keep the label for documentation, but be aware of the 
-    // deprecation warning and the potential for confusion (as discussed previously).
     label 'kaniko-agent' 
     defaultContainer 'jnlp' // Explicitly use 'jnlp' as the default execution environment
     yaml """

@@ -21,7 +21,7 @@ async function start() {
       messages: [{ value: payload }],
     });
     res.json({ ok: true, payload });
-    // just to test the pipeline
+    // just to test the pipeline test
   });
 
   app.get('/healthz', (req, res) => res.send('ok'));

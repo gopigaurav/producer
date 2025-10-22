@@ -1,57 +1,40 @@
 pipeline {
-    agent { kubernetes
-    {
-    label 'kaniko-agent' 
-    defaultContainer 'jnlp' // Explicitly use 'jnlp' as the default execution environment
-    yaml """
+    agent {
+        kubernetes {
+            label 'kaniko-agent'
+            defaultContainer 'kaniko'
+            yaml """
 apiVersion: v1
 kind: Pod
 metadata:
   labels:
     jenkins/label: kaniko-agent
 spec:
-  # Add securityContext for Kaniko to work in many Kubernetes environments
   securityContext:
     fsGroup: 1000
     runAsUser: 1000
   containers:
-    # 1. Kaniko container (The BUILDER)
     - name: kaniko
       image: gcr.io/kaniko-project/executor:latest
-      # FIX: Use a command that works with Kaniko's minimal image 
-      # and keeps the container alive for Jenkins to execute commands inside it.
-      command:
-        - /busybox/sh 
-      args:
-        - -c
-        - 'sleep 99999999' # Keep the container alive
-      tty: true
       volumeMounts:
-        # Docker config secret mount is correct
         - name: kaniko-secret
           mountPath: /kaniko/.docker
-    
-    # 2. JNLP container (The CONTROLLER) - REMOVED
-    # It's best to let the Jenkins Kubernetes plugin automatically inject 
-    # and configure the 'jnlp' container, as it handles the args and volumes correctly.
-    
   volumes:
-    # Docker secret volume is correct
     - name: kaniko-secret
       secret:
         secretName: dockerhub-creds
 """
-}}
+        }
+    }
 
     environment {
-        REGISTRY = "gopi_gaurav"
-        IMAGE_NAME = "producer"
-        INFRA_REPO = "git@github.com:gopigaurav/infra-gitops.git"
-        BRANCH = "main"
+        REGISTRY = "yourdockerhubusername"   // Replace with your DockerHub registry
+        IMAGE_NAME = "yourimage"            // Replace with your image name
+        BUILD_NUMBER = "${env.BUILD_NUMBER}"
     }
 
     stages {
-        stage('Checkout') {
+        stage('Checkout Code') {
             steps {
                 checkout scm
             }
@@ -71,6 +54,7 @@ spec:
                 }
             }
         }
+    }
 
         stage('Update Infra GitOps Repo') {
             steps {

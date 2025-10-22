@@ -11,19 +11,19 @@ pipeline {
                     some-label: kaniko
                 spec:
                 containers:
-                    - name: kaniko
+                  - name: kaniko
                     image: gcr.io/kaniko-project/executor:latest
                     command:
                         - cat
                     tty: true
                     volumeMounts:
-                        - name: kaniko-secret
+                      - name: kaniko-secret
                         mountPath: /kaniko/.docker
                 restartPolicy: Never
                 volumes:
-                    - name: kaniko-secret
-                        secret:
-                            secretName: dockerhub-creds
+                  - name: kaniko-secret
+                    secret:
+                        secretName: dockerhub-creds
                 """
         }
     }

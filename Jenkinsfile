@@ -50,14 +50,14 @@ spec:
             steps {
                 container('kaniko') {
                     sh """
-                        echo "{\"auths\":{\"https://index.docker.io/v1/\":{\"auth\":\"$(echo -n $DOCKER_USERNAME:$DOCKER_PASSWORD)\"}}}" > /kaniko/.docker/config.json
                         /kaniko/executor \\
                         --dockerfile=Dockerfile \\
                         --context=dir://\$PWD \\
                         --destination=\${REGISTRY}/\${IMAGE_NAME}:\${BUILD_NUMBER} \\
                         --destination=\${REGISTRY}/\${IMAGE_NAME}:latest \\
                         --verbosity=info \\
-                        --cleanup
+                        --cleanup \\
+                        --docker-config=/kaniko/.docker
                     """
                 }
             }

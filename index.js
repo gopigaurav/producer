@@ -20,6 +20,7 @@ async function start() {
       topic: process.env.KAFKA_TOPIC || 'events',
       messages: [{ value: payload }],
     });
+    console.log('adding the log')
     res.json({ ok: true, payload });
     // just to test the pipeline test
   });

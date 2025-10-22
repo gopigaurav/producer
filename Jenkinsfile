@@ -1,5 +1,6 @@
 pipeline {
-    agent {
+    agent { kubernetes
+    {
     label 'kaniko-agent' 
     defaultContainer 'jnlp' // Explicitly use 'jnlp' as the default execution environment
     yaml """
@@ -40,6 +41,7 @@ spec:
       secret:
         secretName: dockerhub-creds
 """
+}
 }
 
     environment {

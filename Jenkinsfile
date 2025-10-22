@@ -55,29 +55,6 @@ spec:
                 }
             }
         }
-    }
-
-    stages {
-        stage('Checkout') {
-            steps {
-                checkout scm
-            }
-        }
-
-        stage('Build and Push Image') {
-            steps {
-                container('kaniko') {
-                    sh '''
-                        /kaniko/executor \
-                        --dockerfile=Dockerfile \
-                        --context=$PWD \
-                        --destination=${REGISTRY}/${IMAGE_NAME}:${BUILD_NUMBER} \
-                        --destination=${REGISTRY}/${IMAGE_NAME}:latest \
-                        --cleanup
-                    '''
-                }
-            }
-        }
 
         stage('Update Infra GitOps Repo') {
             steps {

@@ -5,14 +5,12 @@ pipeline {
             defaultContainer 'kaniko'
         }
     }
-
     environment {
         REGISTRY = "gopi_gaurav"
         IMAGE_NAME = "producer"
         INFRA_REPO = "git@github.com:gopigaurav/infra-gitops.git"
         BRANCH = "main"
     }
-
     stages {
         stage('Checkout') {
             steps {

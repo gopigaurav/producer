@@ -31,7 +31,7 @@ spec:
     }
 
     environment {
-        REGISTRY = "gopi_gaurav"
+        REGISTRY = "gopigaurav"
         IMAGE_NAME = "producer"
         INFRA_REPO = "git@github.com:gopigaurav/infra-gitops.git"
         BRANCH = "main"

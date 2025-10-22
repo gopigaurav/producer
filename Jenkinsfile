@@ -14,7 +14,7 @@ pipeline {
                   - name: kaniko
                     image: gcr.io/kaniko-project/executor:latest
                     command:
-                        - cat
+                      - cat
                     tty: true
                     volumeMounts:
                       - name: kaniko-secret

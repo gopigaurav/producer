@@ -45,29 +45,39 @@ spec:
                 checkout scm
             }
         }
-
         stage('Build & Push Image') {
             steps {
-                // container('kaniko') {
-                //     sh """
-                //         /kaniko/executor \\
-                //         --dockerfile=Dockerfile \\
-                //         --context=dir://\$PWD \\
-                //         --destination=\${REGISTRY}/\${IMAGE_NAME}:\${BUILD_NUMBER} \\
-                //         --destination=\${REGISTRY}/\${IMAGE_NAME}:latest \\
-                //         --verbosity=info \\
-                //         --cleanup
-                //     """
-                // }
-                container('kaniko') {
-                    sh """
-                        echo "Checking Kaniko Docker config..."
-                        ls -l /kaniko/.docker
-                        cat /kaniko/.docker/config.json
-                    """
+                // Inject Docker Hub credentials from Jenkins
+                withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', 
+                                                usernameVariable: 'DOCKER_USERNAME', 
+                                                passwordVariable: 'DOCKER_PASSWORD')]) {
+                    container('kaniko') {
+                        sh """
+                            # Create Kaniko Docker config directory if it doesn't exist
+                            mkdir -p /kaniko/.docker
+
+                            # Generate a config.json with base64 encoded Docker Hub credentials
+                            echo "{\"auths\":{\"https://index.docker.io/v1/\":{\"auth\":\"\$(echo -n \$DOCKER_USERNAME:\$DOCKER_PASSWORD | base64)\"}}}" > /kaniko/.docker/config.json
+
+                            # Optional: Verify config.json content (for debug, remove in prod)
+                            echo "Kaniko Docker config:"
+                            cat /kaniko/.docker/config.json
+
+                            # Run Kaniko to build and push the image
+                            /kaniko/executor \\
+                                --dockerfile=Dockerfile \\
+                                --context=dir://\$PWD \\
+                                --destination=\${REGISTRY}/\${IMAGE_NAME}:\${BUILD_NUMBER} \\
+                                --destination=\${REGISTRY}/\${IMAGE_NAME}:latest \\
+                                --verbosity=info \\
+                                --cleanup \\
+                                --docker-config=/kaniko/.docker
+                        """
+                    }
                 }
             }
         }
+
 
         stage('Update Infra GitOps Repo') {
             steps {

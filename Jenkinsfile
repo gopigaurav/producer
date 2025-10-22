@@ -47,31 +47,28 @@ spec:
         }
         stage('Build & Push Image') {
             steps {
-                withCredentials([usernamePassword(credentialsId: 'dockerhub-creds',
-                                                usernameVariable: 'DOCKER_USERNAME',
-                                                passwordVariable: 'DOCKER_PASSWORD')]) {
-                    container('kaniko') {
+                container('kaniko') {
+                    withCredentials([usernamePassword(credentialsId: 'dockerhub-creds',
+                                                    usernameVariable: 'DOCKER_USERNAME',
+                                                    passwordVariable: 'DOCKER_PASSWORD')]) {
                         sh """
                             mkdir -p /tmp/kaniko/.docker
-
-                            echo "{\"auths\":{\"https://index.docker.io/v1/\":{\"auth\":\"\$(echo -n \$DOCKER_USERNAME:\$DOCKER_PASSWORD | base64)\"}}}" > /tmp/kaniko/.docker/config.json
-
+                            echo "{\"auths\":{\"https://index.docker.io/v1/\":{\"auth\":\"$(echo -n $DOCKER_USERNAME:$DOCKER_PASSWORD | base64)\"}}}" > /tmp/kaniko/.docker/config.json
                             echo "Docker config created at /tmp/kaniko/.docker/config.json"
-                            ls -l /tmp/kaniko/.docker
-
-                            /kaniko/executor \\
-                                --dockerfile=Dockerfile \\
-                                --context=dir://\$PWD \\
-                                --destination=\${REGISTRY}/\${IMAGE_NAME}:\${BUILD_NUMBER} \\
-                                --destination=\${REGISTRY}/\${IMAGE_NAME}:latest \\
-                                --verbosity=info \\
-                                --cleanup \\
-                                --docker-config=/tmp/kaniko/.docker
+                            export DOCKER_CONFIG=/tmp/kaniko/.docker
+                            /kaniko/executor \
+                                --dockerfile=Dockerfile \
+                                --context=dir://\$PWD \
+                                --destination=\${REGISTRY}/\${IMAGE_NAME}:\${BUILD_NUMBER} \
+                                --destination=\${REGISTRY}/\${IMAGE_NAME}:latest \
+                                --verbosity=info \
+                                --cleanup
                         """
                     }
                 }
             }
         }
+
 
 
         stage('Update Infra GitOps Repo') {

@@ -1,30 +1,8 @@
 pipeline {
     agent {
         kubernetes {
+            label 'kaniko-agent'
             defaultContainer 'kaniko'
-            yaml """
-                apiVersion: v1
-                kind: Pod
-                metadata:
-                    labels:
-                        jenkins/label: kaniko-agent
-                spec:
-                containers:
-                  - name: kaniko
-                    image: gcr.io/kaniko-project/executor:latest
-                    command:
-                      - cat
-                    tty: true
-                    volumeMounts:
-                      - name: kaniko-secret
-                        mountPath: /kaniko/.docker
-
-
-                volumes:
-                  - name: kaniko-secret
-                    secret:
-                        secretName: dockerhub-creds
-                """
         }
     }
 
@@ -44,14 +22,8 @@ pipeline {
 
         stage('Build and Push Image') {
             steps {
-                container('kaniko') {
-                    sh '''
-                    /kaniko/executor \
-                        --context $PWD \
-                        --dockerfile Dockerfile \
-                        --destination=docker.io/gopigaurav/producer:latest \
-                        --cleanup
-                    '''
+                container('kaniko-agent') {
+                    sh 'executor --dockerfile=Dockerfile --context=./ --destination=your-registry/your-image:tag'
                 }
             }
         }

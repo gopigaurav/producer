@@ -63,6 +63,9 @@ spec:
                             export DOCKER_CONFIG=/tmp/kaniko/.docker
                             cat /kaniko/.docker/config.json
 
+                            echo "✅ Final Docker config that Kaniko will use:"
+                            cat $DOCKER_CONFIG/config.json
+
                             /kaniko/executor \
                                 --dockerfile=Dockerfile \
                                 --context=dir://$PWD \

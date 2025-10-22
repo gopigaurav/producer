@@ -3,28 +3,6 @@ pipeline {
         kubernetes {
             label 'kaniko-agent'
             defaultContainer 'kaniko'
-            yaml """
-                apiVersion: v1
-                kind: Pod
-                metadata:
-                labels:
-                    some-label: kaniko
-                spec:
-                containers:
-                  - name: kaniko
-                    image: gcr.io/kaniko-project/executor:latest
-                    command:
-                        - cat
-                    tty: true
-                    volumeMounts:
-                      - name: kaniko-secret
-                        mountPath: /kaniko/.docker
-                restartPolicy: Never
-                volumes:
-                  - name: kaniko-secret
-                    secret:
-                        secretName: dockerhub-creds
-                """
         }
     }
 
@@ -47,9 +25,9 @@ pipeline {
                 container('kaniko') {
                     sh '''
                     /kaniko/executor \
-                        --context $WORKSPACE \
-                        --dockerfile $WORKSPACE/Dockerfile \
-                        --destination=docker.io/<your-dockerhub-username>/producer:latest \
+                        --context $PWD \
+                        --dockerfile Dockerfile \
+                        --destination=docker.io/gopigaurav/producer:latest \
                         --cleanup
                     '''
                 }

@@ -54,7 +54,6 @@ spec:
                 }
             }
         }
-    }
 
         stage('Update Infra GitOps Repo') {
             steps {

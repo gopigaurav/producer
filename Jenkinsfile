@@ -66,6 +66,7 @@ spec:
                                 --destination=\${REGISTRY}/\${IMAGE_NAME}:latest \\
                                 --verbosity=info \\
                                 --cleanup \\
+                                --docker-config=/tmp/kaniko/.docker
                         """
                     }
                 }

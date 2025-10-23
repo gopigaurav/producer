@@ -66,6 +66,8 @@ spec:
                             echo "✅ Final Docker config that Kaniko will use:"
                             cat $DOCKER_CONFIG/config.json
 
+                            sleep 600 
+
                             /kaniko/executor \
                                 --dockerfile=Dockerfile \
                                 --context=dir://$PWD \

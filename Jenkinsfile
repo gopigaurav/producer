@@ -83,13 +83,40 @@ spec:
                 container('jnlp') {
                     script {
                         sh """
+                            echo "Current directory:"
+                            pwd
+                            echo "Listing files here:"
+                            ls -l
+
+                            # Move to Jenkins workspace (writeable)
+                            cd /home/jenkins/agent/workspace
+                            echo "Changed directory to workspace:"
+                            pwd
+                            echo "Listing files in workspace:"
+                            ls -l
+
+                            # Remove existing repo folder if exists
                             rm -rf infra-gitops
-                            git clone ${INFRA_REPO}
-                            sleep 600
+
+                            # Clone repo explicitly into infra-gitops folder
+                            git clone ${INFRA_REPO} infra-gitops
+                            echo "Listing files after clone:"
+                            ls -l
+
+                            # Navigate to dev overlay
                             cd infra-gitops/overlays/dev
+                            echo "Inside overlays/dev:"
+                            pwd
+                            ls -l
+
+                            # Update image tag
                             yq e -i '.image.tag = "${BUILD_NUMBER}"' ${IMAGE_NAME}-values.yaml
+
+                            # Configure git user for commit
                             git config user.email "gopigaurav9@gmail.com"
                             git config user.name "gopigaurav"
+
+                            # Commit and push changes
                             git commit -am "Update ${IMAGE_NAME} to build ${BUILD_NUMBER}"
                             git push origin ${BRANCH}
                         """

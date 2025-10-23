@@ -85,22 +85,20 @@ spec:
                         sh """
                             echo "Current directory:"
                             pwd
-                            echo "Listing files here:"
                             ls -l
 
-                            # Move to Jenkins workspace (writeable)
+                            # Move to workspace
                             cd /home/jenkins/agent/workspace
-                            echo "Changed directory to workspace:"
+                            echo "Workspace:"
                             pwd
-                            echo "Listing files in workspace:"
                             ls -l
 
-                            # Remove existing repo folder if exists
+                            # Remove old repo if exists
                             rm -rf infra-gitops
 
-                            # Clone repo explicitly into infra-gitops folder
+                            # Clone repo
                             git clone ${INFRA_REPO} infra-gitops
-                            echo "Listing files after clone:"
+                            echo "Files after clone:"
                             ls -l
 
                             # Navigate to dev overlay
@@ -109,14 +107,23 @@ spec:
                             pwd
                             ls -l
 
+                            # Check if yq exists, install if missing
+                            if ! command -v yq &> /dev/null; then
+                                echo "yq not found, installing..."
+                                wget https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -O /usr/local/bin/yq
+                                chmod +x /usr/local/bin/yq
+                            else
+                                echo "yq already installed"
+                            fi
+
                             # Update image tag
                             yq e -i '.image.tag = "${BUILD_NUMBER}"' ${IMAGE_NAME}-values.yaml
 
-                            # Configure git user for commit
+                            # Git config for commit
                             git config user.email "gopigaurav9@gmail.com"
                             git config user.name "gopigaurav"
 
-                            # Commit and push changes
+                            # Commit and push
                             git commit -am "Update ${IMAGE_NAME} to build ${BUILD_NUMBER}"
                             git push origin ${BRANCH}
                         """

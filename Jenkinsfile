@@ -52,17 +52,16 @@ spec:
                                                     usernameVariable: 'DOCKER_USERNAME',
                                                     passwordVariable: 'DOCKER_PASSWORD')]) {
                         sh '''
-                            mkdir -p /tmp/kaniko/.docker
-                            sleep 600 
+                            mkdir -p /kaniko/.docker
 
                             # ✅ Create valid JSON with proper escaping
-                            echo "{\\"auths\\":{\\"https://index.docker.io/v1/\\":{\\"auth\\":\\"$(echo -n $DOCKER_USERNAME:$DOCKER_PASSWORD | base64)\\"}}}" > /tmp/kaniko/.docker/config.json
+                            echo "{\\"auths\\":{\\"https://index.docker.io/v1/\\":{\\"auth\\":\\"$(echo -n $DOCKER_USERNAME:$DOCKER_PASSWORD | base64)\\"}}}" > /kaniko/.docker/config.json
 
-                            echo "✅ Docker config created at /tmp/kaniko/.docker/config.json"
-                            cat /tmp/kaniko/.docker/config.json
+                            echo "✅ Docker config created at cat /kaniko/.docker/config.json"
+                            cat /kaniko/.docker/config.json
 
                             echo "✅ Final Docker config that Kaniko will use:"
-                            cat $DOCKER_CONFIG/config.json
+                            export DOCKER_CONFIG=/kaniko/.docker
 
 
                             /kaniko/executor \

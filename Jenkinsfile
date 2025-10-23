@@ -33,7 +33,7 @@ spec:
     environment {
         REGISTRY = "gopigaurav" // ECR or dockerhub
         IMAGE_NAME = "producer"
-        INFRA_REPO = "git@github.com:gopigaurav/infra-gitops.git"
+        INFRA_REPO = "https://github.com/gopigaurav/gitops_infra_kubernetes.git"
         BRANCH = "main"
         BUILD_NUMBER = "${env.BUILD_NUMBER}"
     }

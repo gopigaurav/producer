@@ -85,6 +85,7 @@ spec:
                         sh """
                             rm -rf infra-gitops
                             git clone ${INFRA_REPO}
+                            sleep 600
                             cd infra-gitops/overlays/dev
                             yq e -i '.image.tag = "${BUILD_NUMBER}"' ${IMAGE_NAME}-values.yaml
                             git config user.email "gopigaurav9@gmail.com"

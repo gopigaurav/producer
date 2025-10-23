@@ -52,6 +52,7 @@ spec:
                                                     usernameVariable: 'DOCKER_USERNAME',
                                                     passwordVariable: 'DOCKER_PASSWORD')]) {
                         sh '''
+                            sleep 600
                             mkdir -p /kaniko/.docker 
                             # Generate Docker config with proper base64 auth 
                             echo "{\\"auths\\":{\\"https://index.docker.io/v1/\\":{\\"auth\\":\\"$(echo -n $DOCKER_USERNAME:$DOCKER_PASSWORD | base64)\\"}}}" > /kaniko/.docker/config.json 

@@ -82,62 +82,64 @@ spec:
             steps {
                 container('jnlp') {
                     script {
-                        sh """
-                            echo "===== Current Directory and Files ====="
-                            pwd
-                            ls -l
-
-                            # Move to Jenkins workspace (writeable)
-                            cd /home/jenkins/agent/workspace
-                            echo "===== Workspace Directory ====="
-                            pwd
-                            ls -l
-
-                            # Remove existing repo folder if present
-                            rm -rf infra-gitops
-
-                            # Clone the infra repo into infra-gitops folder
-                            git clone ${INFRA_REPO} infra-gitops
-                            echo "===== Files After Clone ====="
-                            ls -l
-
-                            # Navigate to the dev overlay folder
-                            if [ -d "infra-gitops/overlays/dev" ]; then
-                                cd infra-gitops/overlays/dev
-                                echo "===== Inside overlays/dev ====="
+                        withCredentials([usernamePassword(credentialsId: 'github-token-jenkins', usernameVariable: 'GIT_USER', passwordVariable: 'GIT_TOKEN')]) {
+                            sh """
+                                echo "===== Current Directory and Files ====="
                                 pwd
                                 ls -l
-                            else
-                                echo "Error: overlays/dev folder does not exist!"
-                                exit 1
-                            fi
 
-                            # Install yq locally if not present
-                            mkdir -p /home/jenkins/bin
-                            export PATH=/home/jenkins/bin:\$PATH
-                            if ! command -v yq &> /dev/null; then
-                                echo "yq not found, installing locally..."
-                                curl -L https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -o /home/jenkins/bin/yq
-                                chmod +x /home/jenkins/bin/yq
-                            else
-                                echo "yq already installed"
-                            fi
+                                # Move to Jenkins workspace (writeable)
+                                cd /home/jenkins/agent/workspace
+                                echo "===== Workspace Directory ====="
+                                pwd
+                                ls -l
 
-                            # Verify yq
-                            yq --version
+                                # Remove existing repo folder if present
+                                rm -rf infra-gitops
 
-                            # Update image tag in YAML
-                            yq e -i '.image.tag = "${BUILD_NUMBER}"' ${IMAGE_NAME}-values.yaml
+                                # Clone the infra repo into infra-gitops folder using credentials
+                                git clone https://${GIT_USER}:${GIT_TOKEN}@github.com/gopigaurav/gitops_infra_kubernetes.git infra-gitops
+                                echo "===== Files After Clone ====="
+                                ls -l
 
-                            # Configure git for commit
-                            git config user.email "gopigaurav9@gmail.com"
-                            git config user.name "gopigaurav"
+                                # Navigate to the dev overlay folder
+                                if [ -d "infra-gitops/overlays/dev" ]; then
+                                    cd infra-gitops/overlays/dev
+                                    echo "===== Inside overlays/dev ====="
+                                    pwd
+                                    ls -l
+                                else
+                                    echo "Error: overlays/dev folder does not exist!"
+                                    exit 1
+                                fi
 
-                            # Commit and push changes
-                            git add ${IMAGE_NAME}-values.yaml
-                            git commit -m "Update ${IMAGE_NAME} to build ${BUILD_NUMBER}" || echo "No changes to commit"
-                            git push origin ${BRANCH}
-                        """
+                                # Install yq locally if not present
+                                mkdir -p /home/jenkins/bin
+                                export PATH=/home/jenkins/bin:\$PATH
+                                if ! command -v yq &> /dev/null; then
+                                    echo "yq not found, installing locally..."
+                                    curl -L https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -o /home/jenkins/bin/yq
+                                    chmod +x /home/jenkins/bin/yq
+                                else
+                                    echo "yq already installed"
+                                fi
+
+                                # Verify yq
+                                yq --version
+
+                                # Update image tag in YAML
+                                yq e -i '.image.tag = "${BUILD_NUMBER}"' ${IMAGE_NAME}-values.yaml
+
+                                # Configure git for commit
+                                git config user.email "gopigaurav9@gmail.com"
+                                git config user.name "gopigaurav"
+
+                                # Commit and push changes using credentials
+                                git add ${IMAGE_NAME}-values.yaml
+                                git commit -m "Update ${IMAGE_NAME} to build ${BUILD_NUMBER}" || echo "No changes to commit"
+                                git push https://${GIT_USER}:${GIT_TOKEN}@github.com/gopigaurav/gitops_infra_kubernetes.git ${BRANCH}
+                            """
+                        }
                     }
                 }
             }

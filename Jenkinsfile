@@ -132,7 +132,7 @@ spec:
 
                                 # Configure git for commit
                                 git config user.email "gopigaurav9@gmail.com"
-                                git config user.name "gopigaurav"
+                                git config user.name "test"
 
                                 
                                 # Commit and push changes using credentials

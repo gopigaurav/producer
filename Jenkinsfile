@@ -87,8 +87,8 @@ spec:
                             git clone ${INFRA_REPO}
                             cd infra-gitops/overlays/dev
                             yq e -i '.image.tag = "${BUILD_NUMBER}"' ${IMAGE_NAME}-values.yaml
-                            git config user.email "ci@yourcompany.com"
-                            git config user.name "ci-bot"
+                            git config user.email "gopigaurav9@gmail.com"
+                            git config user.name "gopigaurav"
                             git commit -am "Update ${IMAGE_NAME} to build ${BUILD_NUMBER}"
                             git push origin ${BRANCH}
                         """

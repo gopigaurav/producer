@@ -60,9 +60,6 @@ spec:
                             echo "✅ Docker config created at /tmp/kaniko/.docker/config.json"
                             cat /tmp/kaniko/.docker/config.json
 
-                            export DOCKER_CONFIG=/tmp/kaniko/.docker
-                            cat /kaniko/.docker/config.json
-
                             echo "✅ Final Docker config that Kaniko will use:"
                             cat $DOCKER_CONFIG/config.json
                             sleep 600 

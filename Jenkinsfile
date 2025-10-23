@@ -139,8 +139,8 @@ spec:
                                 git add ${IMAGE_NAME}-values.yaml
                                 git commit -m "Update ${IMAGE_NAME} to build ${BUILD_NUMBER}" || echo "No changes to commit changes"
                                 echo "GIT_TOKEN length=${GIT_TOKEN}"
-                                git remote add origin 'https://${GIT_USER}:${GIT_TOKEN}@github.com/gopigaurav/gitops_infra_kubernetes.git'
-                                git push origin ${BRANCH}
+                                git remote set-url origin 'https://${GIT_USER}:${GIT_TOKEN}@github.com/gopigaurav/gitops_infra_kubernetes.git'
+                                git -c credential.helper= push origin ${BRANCH}
                             """
                         }
                     }

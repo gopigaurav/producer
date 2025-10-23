@@ -82,13 +82,23 @@ spec:
             steps {
                 container('jnlp') {
                     script {
-                        withCredentials([usernamePassword(credentialsId: 'github-token-jenkins', usernameVariable: 'GIT_USER', passwordVariable: 'GIT_TOKEN')]) {
+                        // Use the SSH private key stored in Jenkins credentials
+                        withCredentials([sshUserPrivateKey(credentialsId: 'github-ssh', keyFileVariable: 'SSH_KEY')]) {
                             sh """
+                                echo "===== Setting up SSH authentication ====="
+                                mkdir -p ~/.ssh
+                                chmod 700 ~/.ssh
+                                ssh-keyscan github.com >> ~/.ssh/known_hosts
+                                chmod 644 ~/.ssh/known_hosts
+
+                                # Use the SSH key for git commands
+                                export GIT_SSH_COMMAND="ssh -i $SSH_KEY -o StrictHostKeyChecking=no"
+
                                 echo "===== Current Directory and Files ====="
                                 pwd
                                 ls -l
 
-                                # Move to Jenkins workspace (writeable)
+                                # Move to Jenkins workspace (writable)
                                 cd /home/jenkins/agent/workspace
                                 echo "===== Workspace Directory ====="
                                 pwd
@@ -97,8 +107,8 @@ spec:
                                 # Remove existing repo folder if present
                                 rm -rf infra-gitops
 
-                                # Clone the infra repo into infra-gitops folder using credentials
-                                git clone https://${GIT_USER}:${GIT_TOKEN}@github.com/gopigaurav/gitops_infra_kubernetes.git infra-gitops
+                                # Clone the infra repo via SSH
+                                git clone git@github.com:gopigaurav/gitops_infra_kubernetes.git infra-gitops
                                 echo "===== Files After Clone ====="
                                 ls -l
 
@@ -132,21 +142,21 @@ spec:
 
                                 # Configure git for commit
                                 git config user.email "gopigaurav9@gmail.com"
-                                git config user.name "test"
+                                git config user.name "jenkins"
 
-                                
-                                # Commit and push changes using credentials
+                                # Commit changes if any
                                 git add ${IMAGE_NAME}-values.yaml
-                                git commit -m "Update ${IMAGE_NAME} to build ${BUILD_NUMBER}" || echo "No changes to commit changes"
-                                echo "GIT_TOKEN length=${GIT_TOKEN}"
-                                git remote set-url origin 'https://${GIT_USER}:${GIT_TOKEN}@github.com/gopigaurav/gitops_infra_kubernetes.git'
-                                git -c credential.helper= push origin ${BRANCH}
+                                git commit -m "Update ${IMAGE_NAME} to build ${BUILD_NUMBER}" || echo "No changes to commit"
+
+                                # Push changes via SSH
+                                git push origin ${BRANCH}
                             """
                         }
                     }
                 }
             }
         }
+
 
     }
 }

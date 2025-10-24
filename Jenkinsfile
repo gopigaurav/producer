@@ -69,7 +69,7 @@ spec:
                                 --context=dir://$PWD \
                                 --destination=${REGISTRY}/${IMAGE_NAME}:${BUILD_NUMBER} \
                                 --destination=${REGISTRY}/${IMAGE_NAME}:latest \
-                                --verbosity=info \
+                                --verbosity=debug \
                                 --cleanup
                         '''
                     }

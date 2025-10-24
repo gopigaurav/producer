@@ -69,7 +69,7 @@ spec:
                                 --context=dir://$PWD \
                                 --destination=${REGISTRY}/${IMAGE_NAME}:${BUILD_NUMBER} \
                                 --destination=${REGISTRY}/${IMAGE_NAME}:latest \
-                                --verbosity=debug \
+                                --verbosity=info \
                                 --cleanup
                         '''
                     }
@@ -82,7 +82,7 @@ spec:
             steps {
                 container('jnlp') {
                     script {
-                        // Use the SSH private key stored in Jenkins credentials
+                        // Use the SSH private key stored in Jenkins credentials log
                         withCredentials([sshUserPrivateKey(credentialsId: 'github-ssh', keyFileVariable: 'SSH_KEY')]) {
                             sh """
                                 echo "===== Setting up SSH authentication ====="
@@ -157,6 +157,17 @@ spec:
             }
         }
 
-
+        // stage('Optional Terraform') {
+        //     steps {
+        //         container('jnlp') {
+        //             sh """
+        //                 echo "Applying Terraform (if applicable)"
+        //                 cd terraform
+        //                 terraform init
+        //                 terraform apply -auto-approve
+        //             """
+        //         }
+        //     }
+        // }
     }
 }

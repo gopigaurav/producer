@@ -82,7 +82,7 @@ spec:
             steps {
                 container('jnlp') {
                     script {
-                        // Use the SSH private key stored in Jenkins credentials log
+                        // Use the SSH private key stored in Jenkins credentials
                         withCredentials([sshUserPrivateKey(credentialsId: 'github-ssh', keyFileVariable: 'SSH_KEY')]) {
                             sh """
                                 echo "===== Setting up SSH authentication ====="

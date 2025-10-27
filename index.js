@@ -26,6 +26,7 @@ async function start() {
   });
 
   app.get('/healthz', (req, res) => res.send('ok'));
+  app.get('/', (req, res) => res.send('test running'));
   const port = process.env.PORT || 3000;
   app.listen(port, () => console.log(`Producer listening ${port}`));
 }

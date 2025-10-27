@@ -4,6 +4,7 @@ const bodyParser = require('body-parser');
 const { Kafka } = require('kafkajs');
 
 const kafkaBrokers = process.env.KAFKA_BROKERS?.split(',') || ['kafka:9092'];
+console.log(kafkaBrokers)
 const kafka = new Kafka({ clientId: 'producer', brokers: kafkaBrokers });
 const producer = kafka.producer();
 

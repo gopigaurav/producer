@@ -5,7 +5,15 @@ const { Kafka } = require('kafkajs');
 
 const kafkaBrokers = process.env.KAFKA_BROKERS?.split(',') || ['kafka:9092'];
 console.log(kafkaBrokers)
-const kafka = new Kafka({ clientId: 'producer', brokers: kafkaBrokers });
+const kafka = new Kafka({ 
+  clientId: 'producer', brokers: kafkaBrokers,
+  ssl: false,
+  sasl: {
+    mechanism: 'plain',
+    username: 'user1',
+    password: 'AUcLDCdEvJ'
+  } 
+});
 const producer = kafka.producer();
 
 async function start() {

@@ -11,7 +11,7 @@ const kafka = new Kafka({
   sasl: {
     mechanism: 'plain',
     username: 'user1',
-    password: 'Mn43uwhFvG'
+    password: 'KmGNQYJcv2'
   } 
 });
 const producer = kafka.producer();

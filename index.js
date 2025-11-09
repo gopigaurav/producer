@@ -7,12 +7,7 @@ const kafkaBrokers = process.env.KAFKA_BROKERS?.split(',') || ['kafka:9092'];
 console.log(kafkaBrokers)
 const kafka = new Kafka({ 
   clientId: 'producer', brokers: kafkaBrokers,
-  ssl: false,
-  sasl: {
-    mechanism: 'plain',
-    username: 'user1',
-    password: 'KmGNQYJcv2'
-  } 
+  ssl: false
 });
 const producer = kafka.producer();
 

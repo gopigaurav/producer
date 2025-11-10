@@ -1,24 +1,20 @@
-// producer/index.js
 const express = require('express');
 const bodyParser = require('body-parser');
 const { Kafka } = require('kafkajs');
 
-const kafkaBrokers = process.env.KAFKA_BROKERS?.split(',') || ['kafka:9092'];
-console.log(kafkaBrokers)
-const kafka = new Kafka({ 
-  clientId: 'producer', brokers: ['kafka-broker-0.kafka-broker-headless.kafka.svc.cluster.local:9092'],
-  ssl: false,
-  sasl: {
-    mechanism: 'plain',
-    username: 'user1',
-    password: 'ZpBot2mCqp'
-  } 
+const kafkaBrokers = process.env.KAFKA_BROKERS?.split(',') || ['kafka.kafka.svc.cluster.local:9092'];
+
+const kafka = new Kafka({
+  clientId: 'producer',
+  brokers: kafkaBrokers,
+  ssl: false
 });
+
 const producer = kafka.producer();
 
 async function start() {
   await producer.connect();
-  console.log('Kafka producer connected');
+  console.log('✅ Kafka producer connected.');
 
   const app = express();
   app.use(bodyParser.json());
@@ -29,18 +25,16 @@ async function start() {
       topic: process.env.KAFKA_TOPIC || 'events',
       messages: [{ value: payload }],
     });
-    console.log('adding ndkfjnkfn')
+    console.log('📤 Sent message:', payload);
     res.json({ ok: true, payload });
-    // just to test the pipeline test
   });
 
   app.get('/healthz', (req, res) => res.send('ok'));
-  app.get('/', (req, res) => res.send('test running'));
   const port = process.env.PORT || 3000;
-  app.listen(port, () => console.log(`Producer listening ${port}`));
+  app.listen(port, () => console.log(`Producer running on ${port}`));
 }
 
 start().catch(err => {
-  console.error(err);
+  console.error('❌ Producer error:', err);
   process.exit(1);
 });
